@@ -30,11 +30,13 @@ def board_state_after_marking(board_state, position_to_mark, mark):
 def play_score(board_state, played_position):
     line_patterns = adjacent_marks(board_state, played_position)
     mark_to_check = position_mark(board_state, played_position)
+    two_in_line = amount_of_two_in_line(line_patterns, mark_to_check)
+    two_in_line_blocked = amount_of_two_in_line_blocked(line_patterns, mark_to_check)
     return 1000*winning_play(line_patterns, mark_to_check) \
-    + 400*blocking_play(line_patterns, mark_to_check) \
-    + 25*amount_of_two_in_line(line_patterns, mark_to_check) \
-    + 20*amount_of_two_in_line_blocked(line_patterns, mark_to_check) \
-    + 5*(played_position==CENTER) \
+    + 600*blocking_play(line_patterns, mark_to_check) \
+    + 90*(two_in_line if two_in_line >= 2 else 0) \
+    + 80*(two_in_line_blocked if two_in_line_blocked >=2 else 0)\
+    + 110*(played_position==CENTER) \
     + (played_position in CORNERS)
 
 def adjacent_marks(board_state, interceptor_position):
@@ -92,13 +94,14 @@ def two_in_line(line_pattern, mark_to_check):
 def amount_of_two_in_line_blocked(line_patterns, mark_to_check):
     return amount_of_two_in_line(line_patterns, opposite_mark(mark_to_check))
 
+def opposite_corner(corner):
+    row, col = corner
+    return (2 if row == 0 else 0, 2 if col == 0 else 0)
+
 def empty_positions(board_state):
 	return [(row, col) for row in range(len(board_state))
          for col in range(len(board_state[row]))
                           if not board_state[row][col]]
-
-
-
 
 def play_to_string(play):
     board_state, score = play
@@ -115,8 +118,9 @@ def board_state_to_string(board_state):
         aux += '\n'
     return aux;
 
-initial_board_state = ((None, None, None,),
-                       (None, 'O', None,),
-                       (None, None, None))
-print(board_state_to_string(initial_board_state))
-print(play_to_string(best_play(initial_board_state, 'x')))
+def initial_board_state():
+    return [[input((row, col)) for col in range(3)] for row in range(3)]
+
+board_state = initial_board_state()
+print(board_state_to_string(board_state))
+print(play_to_string(best_play(board_state, input('Mark: '))))
